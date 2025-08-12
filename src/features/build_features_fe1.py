@@ -45,12 +45,14 @@ def main():
     local_file_path = './data/external/data_usage_production.parquet'
     table = pq.read_table(local_file_path)  # lazy
     df = table.slice(0, 500000).to_pandas()
-    df.set_index("telephone_number", inplace=True)
+    df.drop(columns=["telephone_number"], inplace=True) # tried to use it as index but it has duplicates
 
     target = 'data_compl_usg_local_m1'
     X = df.drop(columns=[target])
-    y = df[target]
-
+    y = df[[target]]
+    print("X shape:", X.shape
+          , "y shape:", y.shape)
+    
     numeric_cols = X.select_dtypes(include=['number']).columns.tolist()
     categorical_cols = X.select_dtypes(
         include=['object', 'category']).columns.tolist()
@@ -80,8 +82,24 @@ def main():
         ('addCols', AddCols()),
     ])
 
+    print("X.index.equals(y.index):", X.index.equals(y.index))
+    print("X.index.is_unique:", X.index.is_unique)
+    print("y.index.is_unique:", y.index.is_unique)
+    print("len(X), len(y):", len(X), len(y))
+    # show first 10 index values for visual check
+    print("X.index[:10]:", list(X.index[:10]))
+    print("y.index[:10]:", list(y.index[:10]))
+
     X_transformed = preproc_pipeline.fit_transform(X, y)
-    X_transformed.to_parquet('./data/processed/data_usage_production.parquet')
+
+    print("X idx unique?", X_transformed.index.is_unique)
+    print("y idx unique?", y.index.is_unique)
+    print("X shape:", X_transformed.shape, "y shape:", y.shape)
+    print("X dup index count:", X_transformed.index.duplicated().sum())
+
+
+    df_merged = X_transformed.join(y)
+    df_merged.to_parquet('./data/processed/data_usage_production.parquet')
 
 
 if __name__ == "__main__":

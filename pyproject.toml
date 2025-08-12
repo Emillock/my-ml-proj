@@ -6,7 +6,11 @@ readme = "README.md"
 requires-python = ">= 3.12"
 authors = [{ name = "Emillock", email = "mirzazadeemil2005@gmail.com" }]
 dependencies = [
+    "category-encoders>=2.8.1",
     # runtime deps go here, e.g. "pandas>=2.2"
+    "pandas>=2.3.1",
+    "scikit-learn>=1.7.1",
+    "scipy>=1.16.1",
 ]
 
 # [tool.ruff]

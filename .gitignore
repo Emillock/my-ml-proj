@@ -205,3 +205,11 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ignore datasets but not the datasets directory itself
+data/external/*
+!data/external/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep

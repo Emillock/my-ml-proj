@@ -1,5 +1,5 @@
 def main():
-    print("Make or download raw data here")
+    print("Create figures and charts")
 
 
 if __name__ == "__main__":

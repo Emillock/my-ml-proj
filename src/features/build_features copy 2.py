@@ -1,14 +1,16 @@
-import pandas as pd
-import numpy as np
 import re
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import FunctionTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from scipy.stats.mstats import winsorize
+
+import numpy as np
+import pandas as pd
 from category_encoders import CatBoostEncoder
+from scipy.stats.mstats import winsorize
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
+
 
 def val_pattern():
     arr=[]
@@ -79,7 +81,7 @@ class ComputeFeatureWeights(BaseEstimator, TransformerMixin):
 
 
 def main():
-    df = pd.read_parquet('../data/multisim_dataset.parquet')
+    df = pd.read_parquet('../../data/multisim_dataset.parquet')
     X_train, y_train, X_test, y_test = train_test_split(df.drop(columns=['target']), df['target'], test_size=0.2, random_state=42)
     
     str_to_int = FunctionTransformer(

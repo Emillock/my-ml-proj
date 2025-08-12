@@ -1,14 +1,17 @@
-import pandas as pd
-import numpy as np
 import re
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import FunctionTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from scipy.stats.mstats import winsorize
+
+import joblib
+import numpy as np
+import pandas as pd
 from category_encoders import CatBoostEncoder
+from scipy.stats.mstats import winsorize
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
+
 
 def val_pattern():
     arr=[]
@@ -126,7 +129,8 @@ def main():
     ])
     
     X_train_transformed = preproc_pipeline.fit_transform(X_train, y_train)
-    X_train_transformed.to_parquet('../../data/processed/X_train_transformed.parquet')
+    joblib.dump(preproc_pipeline, '../../data/interim/preproc_pipeline.joblib', compress=3)
+    X_train_transformed.to_parquet('../../data/processed/multisim_dataset.parquet')
 
 
 if __name__ == "__main__":

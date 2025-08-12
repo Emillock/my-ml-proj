@@ -1,5 +1,5 @@
 [project]
-name = "my_ml_project"
+name = "my_ml_proj"
 version = "0.1.0"
 description = "Reproducible ML project scaffold powered by uv"
 readme = "README.md"

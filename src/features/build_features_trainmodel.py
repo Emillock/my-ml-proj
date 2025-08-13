@@ -1,4 +1,5 @@
 import re
+import json
 
 import joblib
 import numpy as np
@@ -12,6 +13,19 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 
+def to_df_func(X):
+    return pd.DataFrame(X, columns=numeric_cols + categorical_cols + binary_cols + monthly_cols)
+
+def str_to_int_func(X):
+    return X.apply(pd.to_numeric, errors='coerce')
+
+def winsorize_array(X, limits=(0.01, 0.01)):
+    X = np.asarray(X, dtype=float)
+    out = np.empty_like(X)
+    for j in range(X.shape[1]):
+        col = X[:, j]
+        out[:, j] = winsorize(col, limits=limits).data
+    return out
 
 def val_pattern():
     arr=[]
@@ -82,26 +96,21 @@ class ComputeFeatureWeights(BaseEstimator, TransformerMixin):
 
 
 def main():
-    df = pd.read_parquet('../../data/external/multisim_dataset.parquet')
-    X_train, y_train, X_test, y_test = train_test_split(df.drop(columns=['target']), df['target'], test_size=0.2, random_state=42)
+    df = pd.read_parquet('./data/external/multisim_dataset.parquet')
+    
+    target = 'target'
+    X = df.drop(columns=[target])
+    y = df[[target]]
     
     str_to_int = FunctionTransformer(
-        func=lambda X: X.apply(pd.to_numeric, errors='coerce'),
+        func=str_to_int_func,
         validate=False
     )
 
-    def winsorize_array(X, limits=(0.01, 0.01)):
-        X = np.asarray(X, dtype=float)
-        out = np.empty_like(X)
-        for j in range(X.shape[1]):
-            col = X[:, j]
-            out[:, j] = winsorize(col, limits=limits).data
-        return out
-
-    winsor_transformer = FunctionTransformer(lambda X: winsorize_array(X, limits=(0.01, 0.01)))
+    winsor_transformer = FunctionTransformer(func=winsorize_array)
 
     to_df = FunctionTransformer(
-        func=lambda X: pd.DataFrame(X, columns=numeric_cols + categorical_cols+binary_cols + monthly_cols),
+        func=to_df_func,
         validate=False
     )
 
@@ -121,16 +130,24 @@ def main():
         ]),binary_cols),
         ('monthly','passthrough',monthly_cols)
     ])
+    weights_step_name = 'compute_weights'
 
     preproc_pipeline = Pipeline([
-        ('compute_weights', ComputeFeatureWeights(default_weight=6)),
+        (weights_step_name, ComputeFeatureWeights(default_weight=6)),
         ('preproc', preprocessor),
         ('to_df', to_df)
     ])
     
-    X_train_transformed = preproc_pipeline.fit_transform(X_train, y_train)
-    joblib.dump(preproc_pipeline, '../../data/interim/preproc_pipeline.joblib', compress=3)
-    X_train_transformed.to_parquet('../../data/processed/multisim_dataset.parquet')
+    X = X.reset_index(drop=True)
+    y = y.reset_index(drop=True)
+    X_transformed = preproc_pipeline.fit_transform(X, y)
+
+    # joblib.dump(preproc_pipeline, './data/interim/preproc_pipeline.joblib', compress=3)
+    weights=preproc_pipeline.named_steps[weights_step_name].feature_weights_.tolist()
+    with open("./data/interim/multisim_weights.json", "w") as f:
+        json.dump(weights, f)
+    df_full=X_transformed.join(y)
+    df_full.to_parquet('./data/processed/multisim_dataset.parquet')
 
 
 if __name__ == "__main__":

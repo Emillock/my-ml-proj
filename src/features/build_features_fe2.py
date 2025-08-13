@@ -1,16 +1,12 @@
-import re
 
-import numpy as np
 import pandas as pd
 from category_encoders import CatBoostEncoder
-from scipy.stats.mstats import winsorize
+from sentence_transformers import SentenceTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
-from sentence_transformers import SentenceTransformer
 
 categories_col = ["Brand", "Style", "Country"]
 embedding_col = "Variety"
@@ -30,7 +26,7 @@ class AddEmbed(BaseEstimator, TransformerMixin):
         X = X.copy()
 
         # generate embeddings
-        model = SentenceTransformer('all-MiniLM-L6-v2')
+        model = SentenceTransformer("all-MiniLM-L6-v2")
         texts = X[self.embedding_col].astype(str).tolist()
         embs = model.encode(texts)  # shape (n_samples, 384)
 
@@ -38,8 +34,7 @@ class AddEmbed(BaseEstimator, TransformerMixin):
         emb_df = pd.DataFrame(
             embs,
             index=X.index,
-            columns=[
-                f"{self.embedding_col}_emb_{i}" for i in range(embs.shape[1])]
+            columns=[f"{self.embedding_col}_emb_{i}" for i in range(embs.shape[1])],
         )
 
         # drop original text column, concat embeddings
@@ -48,37 +43,47 @@ class AddEmbed(BaseEstimator, TransformerMixin):
 
 
 def main():
-    df = pd.read_csv('./data/external/ramen-ratings.csv')
+    df = pd.read_csv("./data/external/ramen-ratings.csv")
 
-    target = 'Stars'
+    target = "Stars"
 
     X = df.drop(columns=[target, "Top Ten"])
     y = df[target]
 
-    preprocessor = ColumnTransformer([
-        # ('text', Pipeline(),embedding_col),
-        ('cat', Pipeline([
-            ('impute', SimpleImputer(strategy='constant', fill_value='Missing')),
-            ('encode', CatBoostEncoder())
-        ]), categories_col),
-        ('text', 'passthrough', [embedding_col])
-    ])
-
-    to_df = FunctionTransformer(
-        func=lambda X: pd.DataFrame(X, columns=categories_col+[embedding_col]),
-        validate=False      # allow mixed dtypes / object arrays
+    preprocessor = ColumnTransformer(
+        [
+            # ('text', Pipeline(),embedding_col),
+            (
+                "cat",
+                Pipeline(
+                    [
+                        ("impute", SimpleImputer(strategy="constant", fill_value="Missing")),
+                        ("encode", CatBoostEncoder()),
+                    ]
+                ),
+                categories_col,
+            ),
+            ("text", "passthrough", [embedding_col]),
+        ]
     )
 
-    preproc_pipeline = Pipeline([
-        ('preproc', preprocessor),
-        ('to_df', to_df),
-        ('embedding', AddEmbed(embedding_col=embedding_col))
-    ])
+    to_df = FunctionTransformer(
+        func=lambda X: pd.DataFrame(X, columns=categories_col + [embedding_col]),
+        validate=False,  # allow mixed dtypes / object arrays
+    )
+
+    preproc_pipeline = Pipeline(
+        [
+            ("preproc", preprocessor),
+            ("to_df", to_df),
+            ("embedding", AddEmbed(embedding_col=embedding_col)),
+        ]
+    )
 
     X_transformed = preproc_pipeline.fit_transform(X, y)
 
     df_merged = X_transformed.join(y)
-    df_merged.to_parquet('./data/processed/ramen-ratings.parquet')
+    df_merged.to_parquet("./data/processed/ramen-ratings.parquet")
 
 
 if __name__ == "__main__":

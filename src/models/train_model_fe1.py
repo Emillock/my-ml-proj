@@ -20,8 +20,7 @@ def main():
         random_state=42,
         n_jobs=-1,
     )
-    print("X_train shape:", X_train.shape)
-    print("y_train shape:", y_train.shape)
+
     rf.fit(X_train, y_train)
     filename = "./models/rf_fe1.pkl"
     # os.makedirs(os.path.dirname(filename), exist_ok=True)

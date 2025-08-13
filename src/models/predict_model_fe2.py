@@ -3,7 +3,6 @@ import pickle
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
-from xgboost import XGBClassifier
 
 
 
@@ -20,7 +19,7 @@ def main():
     filename = "./models/rf_fe2.pkl"
 
     with open(filename, "rb") as f:
-        rf: XGBClassifier = pickle.load(f)
+        rf = pickle.load(f)
 
     y_pred = rf.predict(X_test)
 

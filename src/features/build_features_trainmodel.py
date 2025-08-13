@@ -149,7 +149,6 @@ def main():
     y = y.reset_index(drop=True)
     X_transformed = preproc_pipeline.fit_transform(X, y)
 
-    # joblib.dump(preproc_pipeline, './data/interim/preproc_pipeline.joblib', compress=3)
     weights = preproc_pipeline.named_steps[weights_step_name].feature_weights_.tolist()
     with open("./data/interim/multisim_weights.json", "w") as f:
         json.dump(weights, f)

@@ -10,6 +10,7 @@ def main():
     df = pd.read_parquet("./data/processed/multisim_dataset.parquet")
 
     target = "target"
+    
     X = df.drop(columns=[target])
     y = df[target]
 
@@ -27,8 +28,6 @@ def main():
         "min_child_weight": 7,
     }
     xgb = XGBClassifier(**params, feature_weights=weights)
-    print("X_train shape:", X_train.shape)
-    print("y_train shape:", y_train.shape)
     xgb.fit(X_train, y_train)
     filename = "./models/xgb_trainmodel.pkl"
 

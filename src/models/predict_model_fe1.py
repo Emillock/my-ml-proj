@@ -7,23 +7,21 @@ from sklearn.ensemble import RandomForestRegressor
 
 
 def main():
-    df = pd.read_parquet('./data/processed/data_usage_production.parquet')
+    df = pd.read_parquet("./data/processed/data_usage_production.parquet")
 
-    target = 'data_compl_usg_local_m1'
+    target = "data_compl_usg_local_m1"
     X = df.drop(columns=[target])
     y = df[target]
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    filename = './models/rf_fe1.pkl'
+    filename = "./models/rf_fe1.pkl"
 
     with open(filename, "rb") as f:
-        rf : RandomForestRegressor = pickle.load(f)
+        rf: RandomForestRegressor = pickle.load(f)
 
-    y_pred=rf.predict(X_test)
-    
+    y_pred = rf.predict(X_test)
+
     mse = mean_squared_error(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)

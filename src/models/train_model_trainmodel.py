@@ -10,7 +10,7 @@ def main():
     df = pd.read_parquet("./data/processed/multisim_dataset.parquet")
 
     target = "target"
-    
+
     X = df.drop(columns=[target])
     y = df[target]
 

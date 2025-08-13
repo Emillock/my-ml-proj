@@ -5,7 +5,6 @@ from sklearn.model_selection import StratifiedKFold, cross_val_score
 from xgboost import XGBClassifier
 
 
-
 def main():
     df = pd.read_parquet("./data/processed/multisim_dataset.parquet")
 

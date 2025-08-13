@@ -213,3 +213,7 @@ data/interim/*
 !data/interim/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+
+# ignore models but not the models directory itself
+models/*
+!models/.gitkeep

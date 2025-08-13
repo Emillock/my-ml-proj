@@ -5,22 +5,34 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
 from xgboost import XGBClassifier
 
-def main():
-    df = pd.read_parquet('./data/processed/multisim_dataset.parquet')
+from train_model_fe2 import DropUnratedWrapper
 
-    target = 'target'
+def main():
+    df = pd.read_parquet('./data/processed/ramen-ratings.parquet')
+
+    target = 'Stars'
+
     X = df.drop(columns=[target])
     y = df[target]
 
-    filename = './models/xgb_trainmodel.pkl'
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    filename = './models/rf_fe2.pkl'
 
     with open(filename, "rb") as f:
-        xgb : XGBClassifier = pickle.load(f)
+        rf : XGBClassifier = pickle.load(f)
     
-    cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=0)
-    print("Precision:", cross_val_score(xgb, X, y, cv=cv, scoring="precision").mean())
-    print("Recall:", cross_val_score(xgb, X, y, cv=cv, scoring="recall").mean())
-    print("F1 Score:", cross_val_score(xgb, X, y, cv=cv, scoring="f1").mean())
+    y_pred = rf.predict(X_test)
+
+    mse = mean_squared_error(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    print(f"MAE: {mae:.3f}")
+    print(f"MSE: {mse:.3f}")
+    print(f"R² Score: {r2:.3f}")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
+from train_model_fe2 import DropUnratedWrapper
+
 
 def main():
     df = pd.read_parquet("./data/processed/ramen-ratings.parquet")

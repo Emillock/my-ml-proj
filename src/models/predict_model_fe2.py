@@ -20,7 +20,7 @@ def main():
     filename = "./models/rf_fe2.pkl"
 
     with open(filename, "rb") as f:
-        rf = pickle.load(f)
+        rf : DropUnratedWrapper = pickle.load(f)
 
     y_pred = rf.predict(X_test)
 
